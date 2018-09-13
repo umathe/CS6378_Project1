@@ -20,8 +20,7 @@ public class ConfigInput_Parser {
 	public static void main(String[] args) {
 		ConfigInput_Parser main = new ConfigInput_Parser();
 
-		File config_file = new File(
-				"C:\\Users\\hinam\\Documents\\2018 Fall - CS 6378.001 - Advanced Operating System\\SampleInput.txt");
+		File config_file = new File("..\\SampleInput.txt");
 		main.ReadInput(config_file); // Run method.
 
 	}
@@ -93,8 +92,7 @@ public class ConfigInput_Parser {
 		}
 	}
 
-	// FUNCTION. Sting input. Boolean output. Check whether inputed string is a
-	// valid integer value.
+	// FUNCTION. Sting input. Boolean output. Check whether inputed string is a valid integer value.
 	public static boolean isInteger(String input) {
 		boolean isValidInteger = false;
 		try {
@@ -107,5 +105,4 @@ public class ConfigInput_Parser {
 		}
 		return isValidInteger;
 	}
-
 }
