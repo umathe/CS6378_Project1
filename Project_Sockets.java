@@ -13,7 +13,6 @@ public class Project_Sockets {
 	static String nodeNeighbors = null;
 	static String[] nodeNeighborsArray;
 	static int nodeNumber = 0;
-	static int totalNodes = 0;
 
 	static Socket server = null;
 	static ArrayList<Socket> socClientsArray = new ArrayList<Socket>();
@@ -22,7 +21,7 @@ public class Project_Sockets {
 	static int numTimesUpdated = 0;
 
 	// local variables for ReadInput function
-	int num_nodes = 0;
+	static int num_nodes = 0; // total number of nodes
 	String[][] info_nodes;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,13 +42,10 @@ public class Project_Sockets {
 		// Run ReadInput function. Outputs cleaned configuration file contents in 2d
 		// array
 		String[][] info_nodes = n1.ReadInput(config_file);
-		totalNodes = info_nodes.length; // Determine total number of nodes
 
 		try {
 			// Capture host name of dc machines (node)
 			nodeHostName = InetAddress.getLocalHost().getCanonicalHostName();
-
-			//nodeHostName = "dc02.utdallas.edu"; // DELETE. FOR TESTING ONLY
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
@@ -80,14 +76,14 @@ public class Project_Sockets {
 			System.out.println("\nHost " + nodeHostName + " on port #" + nodePortNumber
 					+ " initialized.\nWelcome, Node #" + nodeNumber + "!");
 
-			System.out.println("\n-------------------------------------\n");
-
+			System.out.println("\n--------------------------------------\n");
+			
 			// Initialize neighborHopArray
-			neighborHopArray = new int[info_nodes.length];
+			neighborHopArray = new int[num_nodes];
 			Arrays.fill(neighborHopArray, 1000); // 1000 distance assigned for non-neighbor nodes
 			neighborHopArray[nodeNumber] = 0; // 0 distance assigned for own node
-
-			nodeNeighborsArray = nodeNeighbors.split(" ");
+			
+			nodeNeighborsArray = nodeNeighbors.trim().split(" +");
 			for (int i = 0; i < nodeNeighborsArray.length; i++) {
 				neighborHopArray[Integer.parseInt(nodeNeighborsArray[i])] = 1; // 1 distance assigned for neighbor nodes
 			}
@@ -151,11 +147,9 @@ public class Project_Sockets {
 		});
 		t1.start();
 		t2.start();
-		
-		
-		
+	
 		// Print final k-hop neighbors
-		System.out.println("\n-------------------------------------\n");
+		System.out.println("\n--------------------------------------\n");
 		System.out.println("Final k-hop neighbors: " + Arrays.toString(neighborHopArray));
 		System.out.println("Code complete. Exiting. . .");
 
@@ -182,33 +176,39 @@ public class Project_Sockets {
 			while ((temp_filerow = br.readLine()) != null) {
 				if (!temp_filerow.isEmpty()) { // Ignore empty lines
 
-					// Only lines which begin with an unsigned integer are considered to be valid.
-					if (isInteger(temp_filerow.substring(0, 1))) {
-						// REQ: The first valid line of the configuration file contains one token
-						// denoting the number of nodes in the system.
+					// Only lines which begin with an unsigned integer are considered to be valid
+					if (isInteger(temp_filerow.trim().split(" +")[0])) {
+						// Handle # which denotes comments. Characters after # in line are ignored
+						if (temp_filerow.contains("#")) {
+							temp_filerow = temp_filerow.substring(0, temp_filerow.indexOf("#"));
+						}
+						temp_filerow = temp_filerow.trim(); // Handle leading and trailing white spaces
+
+						// First valid line of the configuration file contains one token denoting the
+						// number of nodes in the system.
 						if (firstlinepassed == false) {
-							num_nodes = Integer.parseInt(temp_filerow.substring(0, 1));
+							num_nodes = Integer.parseInt(temp_filerow.trim().split(" +")[0]);
 							info_nodes = new String[num_nodes][4];
 							firstlinepassed = true;
 
 						} else { // first line has passed
 							if (lineCount < num_nodes) {
 								// Populate array containing node information
-								temp_splitarr = temp_filerow.split(" ");
+								temp_splitarr = temp_filerow.trim().split(" +");
 								hostname = ""; // clear contents
 								for (int i = 1; i < temp_splitarr.length - 1; i++) {
 									hostname += temp_splitarr[i].trim();
 								}
 
-								// Assign hostname and port to node
+								// Assign host name and port to node
 								info_nodes[lineCount][0] = temp_splitarr[0].trim();
 								info_nodes[lineCount][1] = hostname;
 								info_nodes[lineCount][2] = temp_splitarr[temp_splitarr.length - 1].trim();
 
 								lineCount++;
 							} else {
-								node = temp_filerow.substring(0, 1);
-								node_neighbors = temp_filerow.substring(1).trim();
+								node = temp_filerow.trim().split(" +")[0].trim();
+								node_neighbors = temp_filerow.trim().split(" +", 2)[1].trim();
 								for (int i = 0; i < info_nodes.length; i++) {
 									if (info_nodes[i][0].equals(node)) {
 										info_nodes[i][3] = node_neighbors;
@@ -232,22 +232,23 @@ public class Project_Sockets {
 	}
 
 	/*
-	 * FUNCTION. Sting input. Boolean output. Check whether inputed string is a
-	 * valid integer value.
+	 * FUNCTION. String input. Boolean output. Check whether inputed string is a
+	 * valid unsigned integer value.
 	 */
 	public static boolean isInteger(String input) {
 		boolean isValidInteger = false;
 		try {
-			Integer.parseInt(input);
-			isValidInteger = true;
-
+			if (!input.contains("-")) { // Only unsigned integers are valid
+				Integer.parseInt(input);
+				isValidInteger = true;
+			}
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// If caught, input is not an integer. Function will return false
 		}
+
 		return isValidInteger;
 	}
-	
+}
 	public void setServer(int nodePortNumber, int totalNodes, int nodeNeighborsNumber) {
 			
 	ServerSocket ssoc = null;
