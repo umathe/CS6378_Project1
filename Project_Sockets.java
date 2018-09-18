@@ -261,7 +261,7 @@ public class Project_Sockets {
 		while(true) {
 			try {
 				Socket soc = ssoc.accept(); 
-				this.socArray.add(soc);
+				this.socClientsArray.add(soc);
 				System.out.println("Client is accepted. Address: " + soc.getInetAddress() + " Port: "+soc.getPort() );
 				counter++; 
 				if(counter == nodeNeighborsNumber){
@@ -296,8 +296,8 @@ public class Project_Sockets {
 	}
 	
 	public void serverCommunicate(String line) {
-		for(int i = 0; i< this.socArray.size(); i++){
-			Socket currentSoc = this.socArray.get(i);
+		for(int i = 0; i< this.socClientsArray.size(); i++){
+			Socket currentSoc = this.socClientsArray.get(i);
 			try {
 				DataOutputStream out = new DataOutputStream(currentSoc.getOutputStream());
 				out.writeUTF(line);
