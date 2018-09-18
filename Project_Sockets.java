@@ -80,8 +80,7 @@ public class Project_Sockets {
 			System.out.println("\nHost " + nodeHostName + " on port #" + nodePortNumber
 					+ " initialized.\nWelcome, Node #" + nodeNumber + "!");
 
-			System.out.println(
-					"\n------------------------------------------------------------------------------------\n");
+			System.out.println("\n-------------------------------------\n");
 
 			// Initialize neighborHopArray
 			neighborHopArray = new int[info_nodes.length];
@@ -103,7 +102,7 @@ public class Project_Sockets {
 		
 		
 		// Print final k-hop neighbors
-		System.out.println("\n------------------------------------------------------------------------------------\n");
+		System.out.println("\n-------------------------------------\n");
 		System.out.println("Final k-hop neighbors: " + Arrays.toString(neighborHopArray));
 		System.out.println("Code complete. Exiting. . .");
 
