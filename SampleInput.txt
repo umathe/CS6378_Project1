@@ -1,9 +1,0 @@
-3
-
-0 dc02 . utdallas . edu 22 
-1 dc03 . utdallas . edu 22 
-2 dc04 . utdallas . edu 22 
-
-0 1  
-1 0 2  
-2 1 
