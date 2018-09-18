@@ -269,7 +269,7 @@ public class Project_Sockets {
 					int i = 0;
 					
 					int interval = nodeNumber*totalNodes*10+50;
-					for(i = 0; i < (totalNodes); i++){
+					for(i = 0; i < (totalNodes*totalNodes); i++){
 						//serverCommunicate();
 						try {
 							Thread.sleep(interval);
