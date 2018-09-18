@@ -85,7 +85,7 @@ public class Project_Sockets {
 			
 			nodeNeighborsArray = nodeNeighbors.trim().split(" +");
 			for (int i = 0; i < nodeNeighborsArray.length; i++) {
-				neighborHopArray[Integer.parseInt(nodeNeighborsArray[i])] = 1; // 1 distance assigned for neighbor nodes
+				neighborHopArray[Integer.parseInt(nodeNeighborsArray[i].trim())] = 1; // 1 distance assigned for neighbor nodes
 			}
 			System.out.println("Initial k-hop neighbors: " + Arrays.toString(neighborHopArray));
 
