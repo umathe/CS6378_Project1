@@ -96,8 +96,61 @@ public class Project_Sockets {
 		}
 
 		
-		// TO DO: set up servers and clients
-		// TO DO: Handling algorithm
+		int nodeNumber1 = n1.nodeNumber;
+		int nodePortNumber1 = nodePortNumber; 
+		
+		System.out.println(nodeNeighbors);
+		String[] nodeNeighborsArray = nodeNeighbors.split(" ");
+		
+		Thread t1 = new Thread(new Runnable() {
+			public void run() {
+				n1.neighborHopArray = new int[info_nodes.length];
+
+				for(int i = 0; i < n1.neighborHopArray.length; i++) {
+					for(int j = 0; j < nodeNeighborsArray.length; j++) {
+						if(Integer.parseInt(nodeNeighborsArray[j])== i) {
+							n1.neighborHopArray[i] = 1; 
+						}
+					}
+				}
+				
+				n1.neighborHopArray[nodeNumber1] = 0;
+				
+				for(int i = 0; i < n1.neighborHopArray.length; i++) {
+					if(i == nodeNumber1){
+						n1.neighborHopArray[i] = 0;
+					}
+					else if(n1.neighborHopArray[i] != 1){
+						n1.neighborHopArray[i] = 1000;
+					}
+					System.out.print(n1.neighborHopArray[i]+ "\t");
+					System.out.println();
+				}
+				
+				n1.setServer(nodePortNumber1, info_nodes.length, nodeNeighborsArray.length);
+			}
+		});
+
+		Timer delayInterval = new Timer();
+		TimerTask taskClientDelay = new TimerTask() {
+			public void run() {
+				for(int i= 0; i<nodeNeighborsArray.length; i++) {
+					for(int j = 0; j<info_nodes.length; j++) {
+						if(info_nodes[j][0].equals(nodeNeighborsArray[i])) {
+							n1.setClient(info_nodes[j][1], Integer.parseInt(info_nodes[j][2]));
+						}
+					}
+				}
+			}
+		};
+		
+		Thread t2 = new Thread(new Runnable() {
+			public void run() {
+				delayInterval.schedule(taskClientDelay, 5000);
+			}
+		});
+		t1.start();
+		t2.start();
 		
 		
 		
@@ -194,4 +247,119 @@ public class Project_Sockets {
 		}
 		return isValidInteger;
 	}
+	
+	public void setServer(int nodePortNumber, int totalNodes, int nodeNeighborsNumber) {
+			
+	ServerSocket ssoc = null;
+	//Socket soc;
+		try {
+			ssoc = new ServerSocket(nodePortNumber);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		int counter = 0;
+		while(true) {
+			try {
+				Socket soc = ssoc.accept(); 
+				this.socArray.add(soc);
+				System.out.println("Client is accepted. Address: " + soc.getInetAddress() + " Port: "+soc.getPort() );
+				counter++; 
+				if(counter == nodeNeighborsNumber){
+					String line = "Please send your initial k-hop array";
+					int i = 0;
+					
+					int interval = nodeNumber*totalNodes*10+50;
+					for(i = 0; i < (totalNodes); i++){
+						//serverCommunicate();
+						try {
+							Thread.sleep(interval);
+							serverCommunicate(line);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+					
+					if(i == (totalNodes*totalNodes)){
+						try {
+							Thread.sleep(interval);
+							line = "Done";
+							serverCommunicate(line);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void serverCommunicate(String line) {
+		for(int i = 0; i< this.socArray.size(); i++){
+			Socket currentSoc = this.socArray.get(i);
+			try {
+				DataOutputStream out = new DataOutputStream(currentSoc.getOutputStream());
+				out.writeUTF(line);
+				ObjectInputStream in = new ObjectInputStream (currentSoc.getInputStream());
+				int[] line1 =(int[])in.readObject();
+				updateNeighborHops(neighborHopArray, line1);
+				for(int k=0; k<neighborHopArray.length; k++){
+					System.out.print(neighborHopArray[k] + "\t");
+				}
+				System.out.println();
+
+			} catch (EOFException exception) {
+				try {
+					currentSoc.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}  catch (IOException | ClassNotFoundException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	public void updateNeighborHops(int me[], int myNeighbor[])
+	{
+		int n = info_nodes.length;
+		for(int i=0; i<n; i++)
+		{
+			if(me[i]>1)
+			{
+				if(myNeighbor[i]>0 && myNeighbor[i]<me[i])
+				{
+					me[i] = myNeighbor[i] + 1;
+				}
+			}
+		}
+		this.neighborHopArray = me;
+	}
+	public void setClient(String nodeHostName, int nodePortNumber) {
+		int[] currentHopArray = this.neighborHopArray;
+		try {
+			final Socket clientSocket = new Socket(nodeHostName, nodePortNumber);
+			DataInputStream in = null;
+			ObjectOutputStream out = null;
+			while(true) {
+				try {
+					in = new DataInputStream(clientSocket.getInputStream());
+					String line = in.readUTF();
+					if(line.equalsIgnoreCase("Done")){
+						clientSocket.close();
+						System.out.println("Connection closed"); 
+						break;
+					}
+					out = new ObjectOutputStream(clientSocket.getOutputStream());
+					out.writeObject(currentHopArray);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 }
