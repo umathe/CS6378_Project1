@@ -1,0 +1,14 @@
+void updateNeighborHops(int me[], int myNeighbor[])
+	{
+		int n = 0;
+		for(int i=0; i<n; i++)
+		{
+			if(me[i]>1)
+			{
+				if(myNeighbor[i]>0 && myNeighbor[i]<me[i])
+				{
+					me[i] = myNeighbor[i] + 1;
+				}
+			}
+		}
+	}
