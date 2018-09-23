@@ -249,10 +249,8 @@ public class Project_Sockets {
 		return isValidInteger;
 	}
 }
-	public void setServer(int nodePortNumber, int totalNodes, int nodeNeighborsNumber) {
-			
-	ServerSocket ssoc = null;
-	//Socket soc;
+	public void setServer(int nodePortNumber, int totalNodes, int nodeNeighborsNumber) {	
+		ServerSocket ssoc = null;
 		try {
 			ssoc = new ServerSocket(nodePortNumber);
 		} catch (IOException e) {
@@ -261,34 +259,16 @@ public class Project_Sockets {
 		int counter = 0;
 		while(true) {
 			try {
+				
 				Socket soc = ssoc.accept(); 
 				this.socClientsArray.add(soc);
-				System.out.println("Client is accepted. Address: " + soc.getInetAddress() + " Port: "+soc.getPort() );
-				counter++; 
-				if(counter == nodeNeighborsNumber){
-					String line = "Please send your initial k-hop array";
-					int i = 0;
-					
-					int interval = nodeNumber*totalNodes*10+50;
-					for(i = 0; i < (totalNodes*totalNodes); i++){
-						//serverCommunicate();
-						try {
-							Thread.sleep(interval);
-							serverCommunicate(line);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-					}
-					
-					if(i == (totalNodes*totalNodes)){
-						try {
-							Thread.sleep(interval);
-							line = "Done";
-							serverCommunicate(line);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-					}
+				System.out.println("Client is accepted. Address: " + soc.getInetAddress() + " Port: "+soc.getPort());
+				String line = "Please send your initial k-hop array";
+				try {
+					Thread.sleep(100);
+					serverCommunicate(line);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -297,67 +277,75 @@ public class Project_Sockets {
 	}
 	
 	public void serverCommunicate(String line) {
+		boolean newUpdateFlag = false;
 		for(int i = 0; i< this.socClientsArray.size(); i++){
 			Socket currentSoc = this.socClientsArray.get(i);
 			try {
+				line = "Have you updated your value";
 				DataOutputStream out = new DataOutputStream(currentSoc.getOutputStream());
 				out.writeUTF(line);
-				ObjectInputStream in = new ObjectInputStream (currentSoc.getInputStream());
-				int[] line1 =(int[])in.readObject();
-				updateNeighborHops(neighborHopArray, line1);
+				ObjectInputStream indis = new ObjectInputStream (currentSoc.getInputStream());
+				int[] line1 =(int[])indis.readObject();
+				boolean x =updateNeighborHops(neighborHopArray, line1);
 				for(int k=0; k<neighborHopArray.length; k++){
 					System.out.print(neighborHopArray[k] + "\t");
 				}
 				System.out.println();
+				out.writeUTF("DONE");
 
-			} catch (EOFException exception) {
-				try {
-					currentSoc.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}  catch (IOException | ClassNotFoundException e1) {
+			} catch (SocketException e) {
+				System.out.println(e);
+			} catch (IOException | ClassNotFoundException e1) {
 				e1.printStackTrace();
 			}
 		}
-	}
-	public void updateNeighborHops(int me[], int myNeighbor[])
-	{
+		serverUpdateFlag = newUpdateFlag;
+	}	
+
+	public boolean updateNeighborHops(int me[], int myNeighbor[]){
 		int n = info_nodes.length;
-		for(int i=0; i<n; i++)
-		{
-			if(me[i]>1)
-			{
-				if(myNeighbor[i]>0 && myNeighbor[i]<me[i])
-				{
+		int countUpdates = 0;
+		for(int i=0; i<n; i++) {
+			if(me[i]>1){
+				if(myNeighbor[i]>0 && myNeighbor[i]<me[i]){
 					me[i] = myNeighbor[i] + 1;
+					countUpdates++;
 				}
 			}
 		}
 		this.neighborHopArray = me;
+		if(countUpdates > 0){
+			return true;
+		} else {
+			return false;
+		}
 	}
+	
 	public void setClient(String nodeHostName, int nodePortNumber) {
 		int[] currentHopArray = this.neighborHopArray;
+
 		try {
 			final Socket clientSocket = new Socket(nodeHostName, nodePortNumber);
-			DataInputStream in = null;
-			ObjectOutputStream out = null;
 			while(true) {
 				try {
-					in = new DataInputStream(clientSocket.getInputStream());
-					String line = in.readUTF();
-					if(line.equalsIgnoreCase("Done")){
+					DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+					String line = in.readUTF(); 
+					ObjectOutputStream dostream = new ObjectOutputStream(clientSocket.getOutputStream());
+					dostream.writeObject(currentHopArray);
+					line = in.readUTF(); 
+					if(line.equalsIgnoreCase("DONE")){
+						in.close();
+						dostream.close();
 						clientSocket.close();
 						System.out.println("Connection closed"); 
 						break;
 					}
-					out = new ObjectOutputStream(clientSocket.getOutputStream());
-					out.writeObject(currentHopArray);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			}
-			
+			}			
+		} catch (SocketException e) {
+			System.out.println(e);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
