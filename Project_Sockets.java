@@ -127,22 +127,23 @@ public class Project_Sockets {
 			}
 		});
 
-		Timer delayInterval = new Timer();
-		TimerTask taskClientDelay = new TimerTask() {
-			public void run() {
-				for(int i= 0; i<nodeNeighborsArray.length; i++) {
-					for(int j = 0; j<info_nodes.length; j++) {
-						if(info_nodes[j][0].equals(nodeNeighborsArray[i])) {
-							n1.setClient(info_nodes[j][1], Integer.parseInt(info_nodes[j][2]));
-						}
-					}
-				}
-			}
-		};
-		
+		int totalnumberofnodes = info_nodes.length;
 		Thread t2 = new Thread(new Runnable() {
 			public void run() {
-				delayInterval.schedule(taskClientDelay, 5000);
+				for(int k = 0; k< (totalnumberofnodes) ; k++){
+					try {
+						Thread.sleep(5000);
+						for(int i= 0; i<nodeNeighborsArray.length; i++) {
+							for(int j = 0; j<info_nodes.length; j++) {
+								if(info_nodes[j][0].equals(nodeNeighborsArray[i])) {
+									n1.setClient(info_nodes[j][1], Integer.parseInt(info_nodes[j][2]));
+								}
+							}
+						}
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+				}
 			}
 		});
 		t1.start();
