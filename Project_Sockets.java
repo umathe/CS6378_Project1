@@ -431,14 +431,14 @@ public class Project_Sockets {
 									out.close();
 									dostream.close();
 									clientSocket.close();
-									System.out.println("Connection closed"); 
+									//System.out.println("Connection closed"); 
 									break;
 								}
 							}
 						} catch (SocketException e1) {
 							in.close();
 							clientSocket.close();
-							System.out.println("Connection Closed");
+							//System.out.println("Connection Closed");
 							break;
 						} catch (IOException e) {
 							e.printStackTrace();
