@@ -153,7 +153,7 @@ public class Project_Sockets {
 				while(n1.updatesCounter > 0){
 					if(n1.updatedClientCounter[0] >= nodeNeighborsArray.length){
 						n1.updatesCounter--;
-						System.out.println("updatesCounter" + n1.updatesCounter);
+					//	System.out.println("updatesCounter" + n1.updatesCounter);
 					} else {
 							
 						try {
@@ -174,12 +174,6 @@ public class Project_Sockets {
 		});
 		t1.start();
 		t2.start();
-	
-		// Print final k-hop neighbors
-		System.out.println("\n--------------------------------------\n");
-		System.out.println("Final k-hop neighbors: " + Arrays.toString(neighborHopArray));
-		System.out.println("Code complete. Exiting. . .");
-
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -367,11 +361,15 @@ public class Project_Sockets {
 					if(serverUpdateFlag == false){
 						updatesCounter--;
 					}
-					System.out.println("updatesCounter" + updatesCounter);
+					//System.out.println("updatesCounter" + updatesCounter);
 					if(updatedClientCounter[0] == tempList.size()){
 						for(Socket soc1:tempList){
 							soc1.close();
 						}
+						// Print final k-hop neighbors
+						System.out.println("\n--------------------------------------\n");
+						System.out.println("Final k-hop neighbors: " + Arrays.toString(neighborHopArray));
+						System.out.println("Code complete. Exiting. . .");
 					}
 				} catch (IOException e1){
 					e1.printStackTrace();
@@ -412,13 +410,15 @@ public class Project_Sockets {
 			public void run(){
 				try {
 					Socket clientSocket = new Socket(nodeHostName, nodePortNumber);
+					DataInputStream in = null;
+					DataOutputStream out  = null;
 					while(true) {
 						try {
-							DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+							in = new DataInputStream(clientSocket.getInputStream());
 							String line = in.readUTF(); 
 							if(line.equalsIgnoreCase("Have you updated your value")){
 								//String clientFlag1 = serverUpdateFlag1[0]? "true" : "false";
-								DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+								out = new DataOutputStream(clientSocket.getOutputStream());
 							
 								out.writeInt(serverUpdateCount);	
 								out.flush();
@@ -436,8 +436,10 @@ public class Project_Sockets {
 								}
 							}
 						} catch (SocketException e1) {
+							in.close();
 							clientSocket.close();
-							e1.printStackTrace();
+							System.out.println("Connection Closed");
+							break;
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
