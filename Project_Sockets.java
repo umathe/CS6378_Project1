@@ -380,7 +380,7 @@ public class Project_Sockets {
 				}
 			}
 		}
-		this.neighborHopArray = me;
+		neighborHopArray = me;
 		if(countUpdates > 0){
 			return true;
 		} else {
@@ -404,7 +404,7 @@ public class Project_Sockets {
 							DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 							String line = in.readUTF(); 
 							if(line.equalsIgnoreCase("Have you updated your value")){
-								String clientFlag1 = serverUpdateFlag1[0]? "true" : "false";
+								//String clientFlag1 = serverUpdateFlag1[0]? "true" : "false";
 								DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 							
 								out.writeInt(serverUpdateCount);	
