@@ -1,0 +1,25 @@
+This is not a valid line
+
+5 # comment
+
+0 dc02 . utdallas . edu 1234 
+1 dc03 . utdallas . edu 22 
+2 dc04 . utdallas . edu 1234 
+3 dc05 . utdallas . edu 1232 
+4 dc06 . utdallas . edu 1233
+
+0 3
+-8 not valid
+1 2 4
+2 1 4
+3 0 4
+4 1 2
+
+
+Not a valid line
+
+
+
+
+
+ 
