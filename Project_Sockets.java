@@ -29,6 +29,7 @@ public class Project_Sockets {
 	static boolean serverUpdateFlag = true;
 	static int clientthread = 0;
 	static int updatesCounter = 0;
+	final int[] updatedClientCounter = new int[1];
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// MAIN
@@ -100,6 +101,7 @@ public class Project_Sockets {
 		
 		int nodeNumber1 = nodeNumber;
 		int nodePortNumber1 = nodePortNumber; 
+		n1.updatedClientCounter[0] = 0;
 		
 		System.out.println(nodeNeighbors);
 		String[] nodeNeighborsArray = nodeNeighbors.split(" ");
@@ -135,18 +137,24 @@ public class Project_Sockets {
 
 		Thread t2 = new Thread(new Runnable() {
 			public void run() {
-				while(updatesCounter > 0){
-					try {
-						Thread.sleep(1000);
-						for(int i= 0; i<nodeNeighborsArray.length; i++) {
-							for(int j = 0; j<info_nodes.length; j++) {
-								if(info_nodes[j][0].equals(nodeNeighborsArray[i])) {
-									n1.setClient(info_nodes[j][1], Integer.parseInt(info_nodes[j][2]));
+				while(n1.updatesCounter > 0){
+					if(n1.updatedClientCounter[0] >= nodeNeighborsArray.length){
+						n1.updatesCounter--;
+						System.out.println("updatesCounter" + n1.updatesCounter);
+					} else {
+							
+						try {
+							Thread.sleep(5000);
+							for(int i= 0; i<nodeNeighborsArray.length; i++) {
+								for(int j = 0; j<info_nodes.length; j++) {
+									if(info_nodes[j][0].equals(nodeNeighborsArray[i])) {
+										n1.setClient(info_nodes[j][1], Integer.parseInt(info_nodes[j][2]));
+									}
 								}
 							}
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
 						}
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
 					}
 				}
 			}
@@ -269,25 +277,31 @@ public class Project_Sockets {
 				Socket soc = ssoc.accept();			
 				socClientsArray.add(soc);
 				counter++;
-				String line = "Please send your initial k-hop array";
 				if(counter == nodeNeighborsNumber){
 					ArrayList<Socket> tempList = new ArrayList<>(socClientsArray);
 					socClientsArray.clear();
 					counter = 0;		
 					try{
 						Thread.sleep(1000);
-						serverCommunicate(line, tempList);
+						serverCommunicate(tempList, ssoc);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}	
 				}
+			} catch (SocketException e1) {
+				try{
+					ssoc.close();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
+				e1.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	public void serverCommunicate(String line, ArrayList<Socket> tempList) {
+	public void serverCommunicate(ArrayList<Socket> tempList, ServerSocket ssoc) {
 		
 		final CountDownLatch latch = new CountDownLatch(tempList.size());
 		final boolean[] newUpdateFlag = new boolean[1];
@@ -304,8 +318,10 @@ public class Project_Sockets {
 						out.writeUTF(line123);
 						
 					    	DataInputStream in = new DataInputStream (currentSoc.getInputStream());
-						String clientFlag = in.readUTF();
-						boolean updatedClientFlag = clientFlag.equals("true")? true : false;
+						int clientCounter = in.readInt();
+						if(clientCounter == 1){
+							updatedClientCounter[0]++;
+						}
 						ObjectInputStream indis = new ObjectInputStream (currentSoc.getInputStream());
 						int[] line1 =(int[])indis.readObject();
 						newUpdateFlag[0] = newUpdateFlag[0] | updateNeighborHops(neighborHopArray, line1);
@@ -318,6 +334,7 @@ public class Project_Sockets {
 						out.flush();
 						out.close();
 						in.close();
+						indis.close();
 						currentSoc.close();
 					} catch (SocketException e) {
 						System.out.println(e);
@@ -338,6 +355,13 @@ public class Project_Sockets {
 						updatesCounter--;
 					}
 					System.out.println("updatesCounter" + updatesCounter);
+					if(updatedClientCounter[0] == tempList.size()){
+						for(Socket soc1:tempList){
+							soc1.close();
+						}
+					}
+				} catch (IOException e1){
+					e1.printStackTrace();
 				} catch (InterruptedException e){
 					e.printStackTrace();
 				}
@@ -367,7 +391,7 @@ public class Project_Sockets {
 	public void setClient(String nodeHostName, int nodePortNumber) {
 		int[] currentHopArray = neighborHopArray;
 		clientthread++;
-		
+		final int serverUpdateCount = updatesCounter;
 		final int ct = clientthread;
 		final boolean serverUpdateFlag1[] = new boolean[1];
 		serverUpdateFlag1[0] = serverUpdateFlag;
@@ -380,23 +404,27 @@ public class Project_Sockets {
 							DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 							String line = in.readUTF(); 
 							if(line.equalsIgnoreCase("Have you updated your value")){
-							String clientFlag1 = serverUpdateFlag1[0]? "true" : "false";
-							DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+								String clientFlag1 = serverUpdateFlag1[0]? "true" : "false";
+								DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 							
-							out.writeUTF(clientFlag1);	
-							out.flush();
-							ObjectOutputStream dostream = new ObjectOutputStream(clientSocket.getOutputStream());
-							dostream.writeObject(currentHopArray);
-							dostream.flush();
-							line = in.readUTF();
-							if(line.equalsIgnoreCase("DONE")){
-								in.close();
-								out.close();
-								clientSocket.close();
-								System.out.println("Connection closed"); 
-								break;
+								out.writeInt(serverUpdateCount);	
+								out.flush();
+								ObjectOutputStream dostream = new ObjectOutputStream(clientSocket.getOutputStream());
+								dostream.writeObject(currentHopArray);
+								dostream.flush();
+								line = in.readUTF();
+								if(line.equalsIgnoreCase("DONE")){
+									in.close();
+									out.close();
+									dostream.close();
+									clientSocket.close();
+									System.out.println("Connection closed"); 
+									break;
+								}
 							}
-							}
+						} catch (SocketException e1) {
+							clientSocket.close();
+							e1.printStackTrace();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -409,6 +437,5 @@ public class Project_Sockets {
 			}
 		});
 		singleClientThread.start();
-	}
-	
+	}	
 }
