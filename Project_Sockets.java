@@ -26,9 +26,9 @@ public class Project_Sockets {
 	String[][] info_nodes;
 	
 	//check number of updates
-	boolean serverUpdateFlag = true;
-	int clientthread = 0;
-	int updatesCounter = 0;
+	static boolean serverUpdateFlag = true;
+	static int clientthread = 0;
+	static int updatesCounter = 0;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// MAIN
@@ -98,7 +98,7 @@ public class Project_Sockets {
 		}
 
 		
-		int nodeNumber1 = n1.nodeNumber;
+		int nodeNumber1 = nodeNumber;
 		int nodePortNumber1 = nodePortNumber; 
 		
 		System.out.println(nodeNeighbors);
@@ -106,26 +106,26 @@ public class Project_Sockets {
 		
 		Thread t1 = new Thread(new Runnable() {
 			public void run() {
-				n1.neighborHopArray = new int[info_nodes.length];
+				neighborHopArray = new int[info_nodes.length];
 
-				for(int i = 0; i < n1.neighborHopArray.length; i++) {
+				for(int i = 0; i < neighborHopArray.length; i++) {
 					for(int j = 0; j < nodeNeighborsArray.length; j++) {
 						if(Integer.parseInt(nodeNeighborsArray[j])== i) {
-							n1.neighborHopArray[i] = 1; 
+							neighborHopArray[i] = 1; 
 						}
 					}
 				}
 				
-				n1.neighborHopArray[nodeNumber1] = 0;
+				neighborHopArray[nodeNumber1] = 0;
 				
-				for(int i = 0; i < n1.neighborHopArray.length; i++) {
+				for(int i = 0; i < neighborHopArray.length; i++) {
 					if(i == nodeNumber1){
-						n1.neighborHopArray[i] = 0;
+						neighborHopArray[i] = 0;
 					}
-					else if(n1.neighborHopArray[i] != 1){
-						n1.neighborHopArray[i] = 1000;
+					else if(neighborHopArray[i] != 1){
+						neighborHopArray[i] = 1000;
 					}
-					System.out.print(n1.neighborHopArray[i]+ "\t");
+					System.out.print(neighborHopArray[i]+ "\t");
 					System.out.println();
 				}
 				
@@ -133,10 +133,9 @@ public class Project_Sockets {
 			}
 		});
 
-		int totalnumberofnodes = info_nodes.length;
 		Thread t2 = new Thread(new Runnable() {
 			public void run() {
-				while(n1.updatesCounter > 0){
+				while(updatesCounter > 0){
 					try {
 						Thread.sleep(1000);
 						for(int i= 0; i<nodeNeighborsArray.length; i++) {
@@ -228,7 +227,7 @@ public class Project_Sockets {
 					}
 				}
 			}
-			this.updatesCounter = info_nodes.length * info_nodes.length;
+			updatesCounter = info_nodes.length * info_nodes.length;
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -256,7 +255,7 @@ public class Project_Sockets {
 
 		return isValidInteger;
 	}
-}
+
 	public void setServer(int nodePortNumber, int totalNodes, int nodeNeighborsNumber) {	
 		ServerSocket ssoc = null;
 		try {
@@ -268,12 +267,12 @@ public class Project_Sockets {
 		while(true) {
 			try {				
 				Socket soc = ssoc.accept();			
-				this.socArray.add(soc);
+				socClientsArray.add(soc);
 				counter++;
 				String line = "Please send your initial k-hop array";
 				if(counter == nodeNeighborsNumber){
-					ArrayList<Socket> tempList = new ArrayList<>(this.socArray);
-					this.socArray.clear();
+					ArrayList<Socket> tempList = new ArrayList<>(socClientsArray);
+					socClientsArray.clear();
 					counter = 0;		
 					try{
 						Thread.sleep(1000);
@@ -334,11 +333,11 @@ public class Project_Sockets {
 			if(counter3 == tempList.size()){
 				try{
 					latch.await();
-					this.serverUpdateFlag = newUpdateFlag[0];
-					if(this.serverUpdateFlag == false){
-						this.updatesCounter--;
+					serverUpdateFlag = newUpdateFlag[0];
+					if(serverUpdateFlag == false){
+						updatesCounter--;
 					}
-					System.out.println("updatesCounter" + this.updatesCounter);
+					System.out.println("updatesCounter" + updatesCounter);
 				} catch (InterruptedException e){
 					e.printStackTrace();
 				}
@@ -366,12 +365,12 @@ public class Project_Sockets {
 	}
 	
 	public void setClient(String nodeHostName, int nodePortNumber) {
-		int[] currentHopArray = this.neighborHopArray;
-		this.clientthread++;
+		int[] currentHopArray = neighborHopArray;
+		clientthread++;
 		
-		final int ct = this.clientthread;
+		final int ct = clientthread;
 		final boolean serverUpdateFlag1[] = new boolean[1];
-		serverUpdateFlag1[0] = this.serverUpdateFlag;
+		serverUpdateFlag1[0] = serverUpdateFlag;
 		Thread singleClientThread = new Thread(new Runnable(){
 			public void run(){
 				try {
