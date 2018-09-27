@@ -144,7 +144,7 @@ public class Project_Sockets {
 					} else {
 							
 						try {
-							Thread.sleep(5000);
+							Thread.sleep(1000);
 							for(int i= 0; i<nodeNeighborsArray.length; i++) {
 								for(int j = 0; j<info_nodes.length; j++) {
 									if(info_nodes[j][0].equals(nodeNeighborsArray[i])) {
