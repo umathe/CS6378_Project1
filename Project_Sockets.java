@@ -332,10 +332,10 @@ public class Project_Sockets {
 						ObjectInputStream indis = new ObjectInputStream (currentSoc.getInputStream());
 						int[] line1 =(int[])indis.readObject();
 						newUpdateFlag[0] = newUpdateFlag[0] | updateNeighborHops(neighborHopArray, line1);
-						for(int k=0; k<neighborHopArray.length; k++){
+						/*for(int k=0; k<neighborHopArray.length; k++){
 							System.out.print(neighborHopArray[k] + "\t");
 						}
-						System.out.println();
+						System.out.println();*/
 						
 						out.writeUTF("DONE");
 						out.flush();
