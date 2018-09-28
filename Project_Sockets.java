@@ -116,7 +116,7 @@ public class Project_Sockets {
 		int nodePortNumber1 = nodePortNumber; 
 		n1.updatedClientCounter[0] = 0;
 		
-		System.out.println(nodeNeighbors);
+		//System.out.println(nodeNeighbors);
 		String[] nodeNeighborsArray = nodeNeighbors.split(" ");
 		
 		Thread t1 = new Thread(new Runnable() {
@@ -140,8 +140,8 @@ public class Project_Sockets {
 					else if(neighborHopArray[i] != 1){
 						neighborHopArray[i] = 1000;
 					}
-					System.out.print(neighborHopArray[i]+ "\t");
-					System.out.println();
+					//System.out.print(neighborHopArray[i]+ "\t");
+					//System.out.println();
 				}
 				
 				n1.setServer(nodePortNumber1, info_nodes.length, nodeNeighborsArray.length);
@@ -153,11 +153,10 @@ public class Project_Sockets {
 				while(n1.updatesCounter > 0){
 					if(n1.updatedClientCounter[0] >= nodeNeighborsArray.length){
 						n1.updatesCounter--;
-					//	System.out.println("updatesCounter" + n1.updatesCounter);
 					} else {
 							
 						try {
-							Thread.sleep(1000);
+							Thread.sleep(50);
 							for(int i= 0; i<nodeNeighborsArray.length; i++) {
 								for(int j = 0; j<info_nodes.length; j++) {
 									if(info_nodes[j][0].equals(nodeNeighborsArray[i])) {
@@ -168,6 +167,13 @@ public class Project_Sockets {
 						} catch (InterruptedException e1) {
 							e1.printStackTrace();
 						}
+					}
+					if(n1.updatesCounter <= 0){
+						// Print final k-hop neighbors
+						System.out.println("\n--------------------------------------\n");
+						System.out.println("Final k-hop neighbors: " + Arrays.toString(n1.neighborHopArray));
+						System.out.println("Code complete. Exiting. . .");
+						System.exit(0);
 					}
 				}
 			}
@@ -242,7 +248,7 @@ public class Project_Sockets {
 					}
 				}
 			}
-			updatesCounter = info_nodes.length * info_nodes.length;
+			updatesCounter = info_nodes.length * info_nodes.length * info_nodes.length;
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -289,7 +295,7 @@ public class Project_Sockets {
 					socClientsArray.clear();
 					counter = 0;		
 					try{
-						Thread.sleep(1000);
+						Thread.sleep(50);
 						serverCommunicate(tempList, ssoc);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
@@ -332,10 +338,6 @@ public class Project_Sockets {
 						ObjectInputStream indis = new ObjectInputStream (currentSoc.getInputStream());
 						int[] line1 =(int[])indis.readObject();
 						newUpdateFlag[0] = newUpdateFlag[0] | updateNeighborHops(neighborHopArray, line1);
-						/*for(int k=0; k<neighborHopArray.length; k++){
-							System.out.print(neighborHopArray[k] + "\t");
-						}
-						System.out.println();*/
 						
 						out.writeUTF("DONE");
 						out.flush();
@@ -366,10 +368,6 @@ public class Project_Sockets {
 						for(Socket soc1:tempList){
 							soc1.close();
 						}
-						// Print final k-hop neighbors
-						System.out.println("\n--------------------------------------\n");
-						System.out.println("Final k-hop neighbors: " + Arrays.toString(neighborHopArray));
-						System.out.println("Code complete. Exiting. . .");
 					}
 				} catch (IOException e1){
 					e1.printStackTrace();
