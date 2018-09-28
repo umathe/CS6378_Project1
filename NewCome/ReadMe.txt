@@ -14,7 +14,7 @@ Code compilation instructions:
 
 3. Create SampleInput.txt file in PuTTY and copy the contents of the configuration file. Save SampleInput.txt.
 
-4. Create Project_Sockets.java file in PuTTY and copy the contects of the submitted java file.
+4. Create Project_Sockets.java file in PuTTY and copy the contents of the submitted java file.
 
 5. Compile code using the following command: javac Project_Sockets.java
 
